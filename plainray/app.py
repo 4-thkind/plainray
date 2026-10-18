@@ -73,7 +73,7 @@ def cmd_explain(args) -> int:
 
 def cmd_selftest(_args) -> int:
     """Everything Except the model: prompts, validation, readability, samples."""
-    samples = json.loads((HERE.parent / "samples" / "sample_reports.json").read_text(encoding="utf-8"))
+    samples = json.loads((HERE.parent / "samples" / "sample_reports.json").read_text(encoding="utf-8"))["reports"]
     readings = [fkgl_grade(s["original"]) for s in samples]
     print(f"sample reports: {len(samples)}")
     for s, g in zip(samples, readings):
