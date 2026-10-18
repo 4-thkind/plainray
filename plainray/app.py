@@ -46,6 +46,9 @@ def _validate(r: dict) -> dict:
     }
     for cell in (r.get("glossary") or [])[:8]:
         if isinstance(cell, dict) and cell.get("term"):
+            term = str(cell["term"]).strip().lower()
+            if not term or term in {g["term"].lower() for g in out["glossary"]}:
+                continue
             out["glossary"].append({"term": str(cell["term"])[:60],
                                     "plain": str(cell.get("plain", ""))[:140]})
     for q in (r.get("questions") or [])[:5]:

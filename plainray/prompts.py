@@ -17,6 +17,8 @@ Hard rules:
 5. Translate every abbreviation the patient will see (e.g. "bilateral", "effusion", "mets").
 6. If the report mentions urgent findings, name them in urgency_note calmly and
    without alarm, using the wording of the report itself.
+7. Glossary must contain ONLY terms that actually appear in the report above.
+   Do not add popular radiology terms the report did not use. Max 6 entries.
 
 Reply with ONLY a JSON object in exactly this shape:
 {
