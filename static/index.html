@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlainRay - plain-language report explainer (local)</title>
+<style>
+  :root { --bg:#0f1115; --card:#161b22; --line:#232a34; --text:#e6edf3; --dim:#8b98a9; --acc:#4cc38a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.55 system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { display:flex; align-items:baseline; gap:12px; padding:18px 24px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:20px; margin:0; }
+  header .tag { color:var(--dim); font-size:13px; }
+  main { max-width:980px; margin:0 auto; padding:24px; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:820px){ main { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); margin:0 0 10px; }
+  textarea, select { width:100%; background:#0b0e13; color:var(--text); border:1px solid var(--line);
+    border-radius:8px; padding:10px; font:13px/1.5 ui-monospace,Consolas,monospace; min-height:170px; resize:vertical; }
+  .row { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; align-items:center; }
+  button { background:var(--acc); color:#06130c; border:0; border-radius:8px; padding:9px 16px;
+    font-weight:650; cursor:pointer; }
+  button.ghost { background:#232a34; color:var(--text); }
+  button[disabled] { opacity:.5; cursor:default; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; background:#1d2733; color:var(--acc); font-size:12px; font-weight:600; }
+  #summary { font-size:15.5px; line-height:1.65; white-space:pre-wrap; }
+  #meta { color:var(--dim); font-size:12px; margin-top:10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { background:#101720; border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-size:13px; }
+  .chip b { color:var(--acc); font-weight:650; }
+  ul { margin:8px 0 0 18px; padding:0; }
+  li { margin:4px 0; }
+  .err { color:#ff6b6b; font:13px/1.5 ui-monospace,monospace; white-space:pre-wrap; }
+  .sample { cursor:pointer; color:var(--acc); text-decoration:underline dotted; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>PlainRay</h1>
+  <span class="tag">runs 100% on this machine - the report never leaves it</span>
+</header>
+<main>
+  <section class="card">
+    <h2>Radiology report</h2>
+    <textarea id="report" spellcheck="false" placeholder="Paste the IMPRESSION section (or the whole report)..."></textarea>
+    <div class="row">
+      <button id="go">Explain in plain language</button>
+      <button id="paste" class="ghost">Load sample</button>
+      <span id="status" class="tag"></span>
+    </div>
+  </section>
+  <section class="card">
+    <h2>Plain-language explainer</h2>
+    <p id="summary">Paste a report, then click Explain.</p>
+    <div id="meta"></div>
+    <div id="glossary" class="chips" style="margin-top:12px"></div>
+    <div id="questions" style="margin-top:12px"></div>
+    <div id="err" class="err"></div>
+  </section>
+</main>
+<script>
+const samples = [
+  "EXAMINATION: CHEST PA AND LATERAL\nINDICATION: Persistent cough for three weeks, shortness of breath on exertion, known smoker.\nFINDINGS: The cardiac silhouette is normal in size. There is airspace opacification obscuring the left hemidiaphragm base, with mild volume loss in the left lower lobe. No pleural effusion. No pneumothorax. Mediastinum is not widened. Bones and soft tissues are unremarkable.\nIMPRESSION: Left lower lobe consolidation, consistent with pneumonia. Recommend follow-up radiograph after six weeks of full antibiotic therapy to confirm clearing.",
+  "EXAMINATION: MAMMOGRAPHY BILATERAL CC AND MLO VIEWS\nINDICATION: Routine screening, age 54. Family history: mother, postmenopausal breast cancer.\nFINDINGS: Breast composition is scattered fibroglandular tissue. There are no suspicious masses, calcifications or skin changes. Four tiny non-enlarged post-delivery axillary lymph nodes are seen on the left. Right axilla unremarkable. Skin follows the contour of the breast. Nipple-areolar complex unchanged, no indentation.\nIMPRESSION: ACR 2. Benign. Sections of the bilateral breasts ACR fall within the normal range. Recommend routine screening in one year.",
+  "EXAMINATION: KNEE MRI, LEFT, WITHOUT CONTRAST\nINDICATION: KNOWN CAP. Twisting injury during football two weeks ago, swelling and clicking.\nFINDINGS: A small (<1 cm) grade II/M III disruption along the distal medial meniscus body and posterior horn, without a displaced fragment. Grade II chondral change over medial compartment. Intact cruciate and collateral ligaments. Small joint effusion. No popliteal cyst. No bone marrow edema.\nIMPRESSION: Grade II-III medial meniscus tear without displacement. Referral to orthopedics if symptoms persist beyond six weeks of conservative treatment."
+];
+let si = 0;
+const $ = (id) => document.getElementById(id);
+$("paste").onclick = () => { $("report").value = samples[si++ % samples.length]; };
+$("go").onclick = async () => {
+  const btn = $("go"), st = $("status"); const report = $("report").value.trim();
+  if (!report) { $("err").textContent = "Paste a report first."; return; }
+  btn.disabled = true; st.textContent = "thinking locally..."; $("err").textContent = "";
+  try {
+    const r = await fetch("/api/explain", { method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ report }) });
+    const data = await r.json();
+    if (!r.ok) { $("err").textContent = data.error || ("HTTP " + r.status); return; }
+    $("summary").textContent = data.summary || "";
+    $("meta").innerHTML = "";
+    if (data._meta) {
+      const g = data._meta.flesch_kincaid;
+      $("meta").innerHTML = `<span class="badge">reading grade ${g}</span> <span class=\"badge\">model: ${data._meta.model} (local)</span>`;
+    }
+    $("glossary").innerHTML = (data.glossary || []).map(x =>
+      `<div class="chip"><b>${esc(x.term)}</b> &rarr; ${esc(x.plain)}</div>`).join("");
+    const qs = data.questions || [];
+    $("questions").innerHTML = qs.length ? "<h2>Questions to ask their doctor</h2><ul>" +
+      qs.map(q => "<li>" + esc(q) + "</li>").join("") + "</ul>" : "";
+    if (data.urgency_note) {
+      $("questions").innerHTML += `<p style="margin-top:10px"><b>Urgency:</b> ${esc(data.urgency_note)}</p>`;
+    }
+  } catch (e) { $("err").textContent = String(e); }
+  finally { btn.disabled = false; st.textContent = ""; }
+};
+const esc = (s) => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;");
+</script>
+</body>
+</html>

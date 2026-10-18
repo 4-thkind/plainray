@@ -1,0 +1,17 @@
+{
+  "note": "Synthetic sample reports written for testing. No patient data of any kind is committed to this repo - swap in your own reports locally.",
+  "reports": [
+    {
+      "id": "chest-consolidation",
+      "original": "EXAMINATION: CHEST PA AND LATERAL\nINDICATION: Persistent cough for three weeks, shortness of breath on exertion, known smoker.\nFINDINGS: Cardiac silhouette is normal in size. There is airspace opacification obscuring the left hemidiaphragm base, with mild volume loss in the left lower lobe. No pleural effusion. No pneumothorax. Mediastinum is not widened. Bones and soft tissues unremarkable.\nIMPRESSION: Left lower lobe consolidation, consistent with pneumonia. Recommend follow-up radiograph after six weeks of full antibiotic therapy to confirm clearing."
+    },
+    {
+      "id": "knee-meniscus",
+      "original": "EXAMINATION: KNEE MRI, LEFT, WITHOUT CONTRAST\nINDICATION: Twisting injury during football two weeks ago, swelling and clicking.\nFINDINGS: A small (<1 cm) grade II/III disruption along the distal medial meniscus body and posterior horn, without a displaced fragment. Grade II chondral change over the medial compartment. Intact cruciate and collateral ligaments. Small joint effusion. No popliteal cyst. No bone marrow edema.\nIMPRESSION: Grade II-III medial meniscus tear without displacement. Referral to orthopedics if symptoms persist beyond six weeks of conservative treatment."
+    },
+    {
+      "id": "mammo-birads2",
+      "original": "EXAMINATION: MAMMOGRAPHY BILATERAL CC AND MLO VIEWS\nINDICATION: Routine screening, age 54. Family history: mother, postmenopausal breast cancer.\nFINDINGS: Scattered fibroglandular tissue. No suspicious masses, calcifications or skin changes. Tiny non-enlarged post-delivery axillary lymph nodes on the left. Right axilla unremarkable. No nipple retraction.\nIMPRESSION: ACR 2. Benign. Recommend routine screening in one year."
+    }
+  ]
+}
